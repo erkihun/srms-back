@@ -52,12 +52,12 @@ export async function getMe(req, res, next) {
 
 export async function registerEmployee(req, res, next) {
   try {
-    const { full_name, email, password } = req.body || {};
+    const { full_name, email, password, department_id } = req.body || {};
 
-    if (!full_name || !email || !password) {
+    if (!full_name || !email || !password || !department_id) {
       return res
         .status(400)
-        .json({ message: 'Full name, email, and password are required.' });
+        .json({ message: 'Full name, email, department, and password are required.' });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -76,11 +76,17 @@ export async function registerEmployee(req, res, next) {
       return res.status(409).json({ message: 'This email is already registered.' });
     }
 
+    const numericDept = Number(department_id);
+    if (!Number.isInteger(numericDept) || numericDept <= 0) {
+      return res.status(400).json({ message: 'Invalid department selection.' });
+    }
+
     const user = await createUser({
       full_name,
       email,
       password,
       role: 'EMPLOYEE',
+      department_id: numericDept,
       is_active: true
     });
 
