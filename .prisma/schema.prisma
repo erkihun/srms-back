@@ -1,13 +1,200 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  TECHNICIAN
+  EMPLOYEE
+}
+
+enum TicketStatus {
+  NEW
+  IN_PROGRESS
+  ON_HOLD
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Department {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @map("updated_at")
+
+  users   User[]
+  tickets Ticket[]
+
+  @@map("departments")
+}
+
+model User {
+  id                  Int                @id @default(autoincrement())
+  fullName            String             @map("full_name")
+  email               String             @unique
+  passwordHash        String             @map("password_hash")
+  role                UserRole
+  departmentId        Int?               @map("department_id")
+  isActive            Boolean            @default(true) @map("is_active")
+  username            String?            @unique
+  avatarUrl           String?            @map("avatar_url")
+  phone               String?
+  createdAt           DateTime           @default(now()) @map("created_at")
+  updatedAt           DateTime?          @map("updated_at")
+  department          Department?        @relation(fields: [departmentId], references: [id])
+  requestedTickets    Ticket[]           @relation("TicketRequester")
+  assignedTickets     Ticket[]           @relation("TicketAssignee")
+  createdTicketLogs   TicketLog[]        @relation("TicketLogAuthor")
+  uploadedAttachments TicketAttachment[] @relation("TicketAttachmentUploader")
+  assignedTasks       Task[]             @relation("TaskAssignee")
+  createdTasks        Task[]             @relation("TaskCreator")
+  technicianProgress  TaskProgress[]     @relation("TaskProgressTechnician")
+  adminProgress       TaskProgress[]     @relation("TaskProgressAdmin")
+  notifications       Notification[]
+
+  @@map("users")
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @map("updated_at")
+  tickets     Ticket[]
+
+  @@map("categories")
+}
+
+model Ticket {
+  id              Int                @id @default(autoincrement())
+  ticketCode      String             @unique @map("ticket_code")
+  title           String
+  description     String?
+  status          TicketStatus       @default(NEW)
+  priority        TicketPriority     @default(MEDIUM)
+  requesterId     Int                @map("requester_id")
+  assignedToId    Int?               @map("assigned_to_id")
+  departmentId    Int?               @map("department_id")
+  categoryId      Int?               @map("category_id")
+  feedbackRating  Int?               @map("feedback_rating")
+  feedbackComment String?            @map("feedback_comment")
+  feedbackGivenAt DateTime?          @map("feedback_given_at")
+  requestedAt     DateTime           @default(now()) @map("requested_at")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime?          @map("updated_at")
+  requester       User               @relation("TicketRequester", fields: [requesterId], references: [id])
+  assignedTo      User?              @relation("TicketAssignee", fields: [assignedToId], references: [id])
+  department      Department?        @relation(fields: [departmentId], references: [id])
+  category        Category?          @relation(fields: [categoryId], references: [id])
+  logs            TicketLog[]
+  attachments     TicketAttachment[]
+
+  @@map("tickets")
+}
+
+model TicketLog {
+  id          Int           @id @default(autoincrement())
+  ticketId    Int           @map("ticket_id")
+  createdById Int           @map("created_by_id")
+  actionType  String        @map("action_type")
+  oldStatus   TicketStatus? @map("old_status")
+  newStatus   TicketStatus? @map("new_status")
+  note        String?
+  createdAt   DateTime      @default(now()) @map("created_at")
+  ticket      Ticket        @relation(fields: [ticketId], references: [id])
+  createdBy   User          @relation("TicketLogAuthor", fields: [createdById], references: [id])
+
+  @@map("ticket_logs")
+}
+
+model TicketAttachment {
+  id               Int      @id @default(autoincrement())
+  ticketId         Int      @map("ticket_id")
+  uploadedById     Int      @map("uploaded_by_id")
+  filenameOriginal String   @map("filename_original")
+  filenameStored   String   @map("filename_stored")
+  mimeType         String?  @map("mime_type")
+  sizeBytes        BigInt?  @map("size_bytes") @db.BigInt
+  createdAt        DateTime @default(now()) @map("created_at")
+  ticket           Ticket   @relation(fields: [ticketId], references: [id])
+  uploadedBy       User     @relation("TicketAttachmentUploader", fields: [uploadedById], references: [id])
+
+  @@map("ticket_attachments")
+}
+
+model Task {
+  id               Int            @id @default(autoincrement())
+  title            String
+  description      String?
+  status           TaskStatus     @default(OPEN)
+  priority         TaskPriority   @default(MEDIUM)
+  assignedToId     Int?           @map("assigned_to")
+  createdById      Int?           @map("created_by")
+  dueDate          DateTime?      @map("due_date")
+  technicianNote   String?        @map("technician_note")
+  technicianRating Int?           @map("technician_rating")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime?      @map("updated_at")
+  assignedTo       User?          @relation("TaskAssignee", fields: [assignedToId], references: [id])
+  createdBy        User?          @relation("TaskCreator", fields: [createdById], references: [id])
+  progress         TaskProgress[]
+
+  @@map("tasks")
+}
+
+model TaskProgress {
+  id           Int        @id @default(autoincrement())
+  taskId       Int        @map("task_id")
+  technicianId Int?       @map("technician_id")
+  status       TaskStatus
+  note         String?
+  adminComment String?    @map("admin_comment")
+  adminId      Int?       @map("admin_id")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  task         Task       @relation(fields: [taskId], references: [id])
+  technician   User?      @relation("TaskProgressTechnician", fields: [technicianId], references: [id])
+  admin        User?      @relation("TaskProgressAdmin", fields: [adminId], references: [id])
+
+  @@map("task_progress")
+}
+
+model Notification {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  title     String
+  message   String
+  linkUrl   String?   @map("link_url")
+  isRead    Boolean   @default(false) @map("is_read")
+  createdAt DateTime  @default(now()) @map("created_at")
+  readAt    DateTime? @map("read_at")
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
 }
