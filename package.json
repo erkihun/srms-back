@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "dev": "nodemon src/index.js",
-    "db:seed": "node seed.js",
+    "db:seed": "prisma db seed",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio"
@@ -23,5 +23,8 @@
   "devDependencies": {
     "nodemon": "^3.1.11",
     "prisma": "^7.0.0"
+  },
+  "prisma": {
+    "seed": "node .prisma/seed.js"
   }
 }
