@@ -165,6 +165,65 @@ router.get(
 );
 
 router.get(
+  '/recent-tickets',
+  requireAuth,
+  requireRole('ADMIN'),
+  async (req, res, next) => {
+    try {
+      const recent = await query(
+        `
+        SELECT
+          t.id,
+          t.ticket_code,
+          t.title,
+          t.status,
+          t.priority,
+          t.requested_at,
+          t.updated_at,
+          t.assigned_to_id,
+          t.requester_id,
+          t.department_id,
+          t.category_id,
+          req.full_name AS requester_name,
+          ass.full_name AS assignee_name,
+          d.name AS department_name,
+          c.name AS category_name
+        FROM tickets t
+        LEFT JOIN users req ON req.id = t.requester_id
+        LEFT JOIN users ass ON ass.id = t.assigned_to_id
+        LEFT JOIN departments d ON d.id = t.department_id
+        LEFT JOIN categories c ON c.id = t.category_id
+        ORDER BY t.requested_at DESC NULLS LAST
+        LIMIT 10
+        `
+      );
+
+      const normalized = (recent.rows || []).map((row) => ({
+        id: row.id,
+        ticket_code: row.ticket_code,
+        title: row.title,
+        status: row.status,
+        priority: row.priority,
+        requested_at: row.requested_at,
+        updated_at: row.updated_at,
+        assigned_to_id: row.assigned_to_id ? Number(row.assigned_to_id) : null,
+        requester_id: row.requester_id ? Number(row.requester_id) : null,
+        department_id: row.department_id ? Number(row.department_id) : null,
+        category_id: row.category_id ? Number(row.category_id) : null,
+        requester_name: row.requester_name,
+        assignee_name: row.assignee_name,
+        department_name: row.department_name,
+        category_name: row.category_name,
+      }));
+
+      res.json(normalized);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.get(
   '/technician-summary',
   requireAuth,
   requireRole('TECHNICIAN'),
