@@ -6,6 +6,20 @@ const serverUrl =
   process.env.PUBLIC_BASE_URL ||
   'https://srms-ewt8.onrender.com';
 
+const servers = [];
+
+if (serverUrl) {
+  servers.push({
+    url: serverUrl,
+    description: 'Production server',
+  });
+}
+
+servers.push({
+  url: `http://localhost:${port}`,
+  description: 'Local development server',
+});
+
 const openApiSpec = {
   openapi: '3.0.0',
   info: {
@@ -13,16 +27,7 @@ const openApiSpec = {
     version: '1.0.0',
     description: 'Service Request Management System API documentation.',
   },
-  servers: [
-    {
-      url: `http://localhost:${port}`,
-      description: 'Local development server',
-    },
-    {
-      url: serverUrl,
-      description: 'Production server',
-    },
-  ],
+  servers,
   components: {
     securitySchemes: {
       BearerAuth: {
