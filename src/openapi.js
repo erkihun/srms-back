@@ -1,6 +1,11 @@
 
 const port = process.env.PORT || 4000;
 
+const serverUrl =
+  process.env.RENDER_EXTERNAL_URL ||
+  process.env.PUBLIC_BASE_URL ||
+  'https://srms-ewt8.onrender.com';
+
 const openApiSpec = {
   openapi: '3.0.0',
   info: {
@@ -12,6 +17,10 @@ const openApiSpec = {
     {
       url: `http://localhost:${port}`,
       description: 'Local development server',
+    },
+    {
+      url: serverUrl,
+      description: 'Production server',
     },
   ],
   components: {
