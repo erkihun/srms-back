@@ -14,11 +14,178 @@ const openApiSpec = {
       description: 'Local development server',
     },
   ],
+  components: {
+    securitySchemes: {
+      BearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'JWT access token obtained from /api/auth/login',
+      },
+    },
+    schemas: {
+      User: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer' },
+          full_name: { type: 'string' },
+          email: { type: 'string', format: 'email' },
+          role: { type: 'string', enum: ['ADMIN', 'TECHNICIAN', 'EMPLOYEE'] },
+          department_id: { type: 'integer', nullable: true },
+          is_active: { type: 'boolean' },
+          username: { type: 'string', nullable: true },
+          avatar_url: { type: 'string', nullable: true },
+          phone: { type: 'string', nullable: true },
+          created_at: { type: 'string', format: 'date-time', nullable: true },
+          updated_at: { type: 'string', format: 'date-time', nullable: true },
+        },
+      },
+      UserSummary: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer' },
+          full_name: { type: 'string' },
+          email: { type: 'string', format: 'email' },
+          role: { type: 'string', enum: ['ADMIN', 'TECHNICIAN', 'EMPLOYEE'] },
+          department_id: { type: 'integer', nullable: true },
+          is_active: { type: 'boolean' },
+        },
+      },
+      Department: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer' },
+          name: { type: 'string' },
+          description: { type: 'string', nullable: true },
+          created_at: { type: 'string', format: 'date-time', nullable: true },
+          updated_at: { type: 'string', format: 'date-time', nullable: true },
+        },
+      },
+      Category: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer' },
+          name: { type: 'string' },
+          description: { type: 'string', nullable: true },
+          is_active: { type: 'boolean' },
+          created_at: { type: 'string', format: 'date-time', nullable: true },
+          updated_at: { type: 'string', format: 'date-time', nullable: true },
+        },
+      },
+      Ticket: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer' },
+          ticket_code: { type: 'string' },
+          title: { type: 'string' },
+          description: { type: 'string', nullable: true },
+          status: { type: 'string', enum: ['NEW', 'IN_PROGRESS', 'ON_HOLD', 'RESOLVED', 'CLOSED'] },
+          priority: { type: 'string', enum: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] },
+          requester_id: { type: 'integer' },
+          assigned_to_id: { type: 'integer', nullable: true },
+          department_id: { type: 'integer', nullable: true },
+          category_id: { type: 'integer', nullable: true },
+          feedback_rating: { type: 'integer', nullable: true },
+          feedback_comment: { type: 'string', nullable: true },
+          feedback_given_at: { type: 'string', format: 'date-time', nullable: true },
+          requested_at: { type: 'string', format: 'date-time', nullable: true },
+          created_at: { type: 'string', format: 'date-time', nullable: true },
+          updated_at: { type: 'string', format: 'date-time', nullable: true },
+        },
+      },
+      TicketLog: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer' },
+          ticket_id: { type: 'integer' },
+          created_by_id: { type: 'integer' },
+          action_type: { type: 'string' },
+          old_status: { type: 'string', enum: ['NEW', 'IN_PROGRESS', 'ON_HOLD', 'RESOLVED', 'CLOSED'], nullable: true },
+          new_status: { type: 'string', enum: ['NEW', 'IN_PROGRESS', 'ON_HOLD', 'RESOLVED', 'CLOSED'], nullable: true },
+          note: { type: 'string', nullable: true },
+          created_at: { type: 'string', format: 'date-time', nullable: true },
+        },
+      },
+      TicketAttachment: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer' },
+          ticket_id: { type: 'integer' },
+          uploaded_by_id: { type: 'integer' },
+          filename_original: { type: 'string' },
+          filename_stored: { type: 'string' },
+          mime_type: { type: 'string', nullable: true },
+          size_bytes: { type: 'integer', nullable: true },
+          created_at: { type: 'string', format: 'date-time', nullable: true },
+        },
+      },
+      Task: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer' },
+          title: { type: 'string' },
+          description: { type: 'string', nullable: true },
+          status: { type: 'string', enum: ['OPEN', 'IN_PROGRESS', 'DONE', 'CANCELLED'] },
+          priority: { type: 'string', enum: ['LOW', 'MEDIUM', 'HIGH'] },
+          assigned_to: { type: 'integer', nullable: true },
+          created_by: { type: 'integer', nullable: true },
+          due_date: { type: 'string', format: 'date-time', nullable: true },
+          technician_note: { type: 'string', nullable: true },
+          technician_rating: { type: 'integer', nullable: true },
+          created_at: { type: 'string', format: 'date-time', nullable: true },
+          updated_at: { type: 'string', format: 'date-time', nullable: true },
+        },
+      },
+      TaskProgress: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer' },
+          task_id: { type: 'integer' },
+          technician_id: { type: 'integer', nullable: true },
+          status: { type: 'string', enum: ['OPEN', 'IN_PROGRESS', 'DONE', 'CANCELLED'] },
+          note: { type: 'string', nullable: true },
+          admin_comment: { type: 'string', nullable: true },
+          admin_id: { type: 'integer', nullable: true },
+          created_at: { type: 'string', format: 'date-time', nullable: true },
+        },
+      },
+      Notification: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer' },
+          user_id: { type: 'integer' },
+          title: { type: 'string' },
+          message: { type: 'string' },
+          link_url: { type: 'string', nullable: true },
+          is_read: { type: 'boolean' },
+          created_at: { type: 'string', format: 'date-time', nullable: true },
+          read_at: { type: 'string', format: 'date-time', nullable: true },
+        },
+      },
+      AuthResponse: {
+        type: 'object',
+        properties: {
+          token: { type: 'string', description: 'JWT token' },
+          user: { $ref: '#/components/schemas/UserSummary' },
+        },
+      },
+      Ok: {
+        type: 'object',
+        properties: { ok: { type: 'boolean', example: true } },
+      },
+      Error: {
+        type: 'object',
+        properties: { message: { type: 'string' } },
+      },
+    },
+  },
+  security: [{ BearerAuth: [] }],
   paths: {
     '/api/health': {
       get: {
         summary: 'Health check',
         description: 'Returns basic information about API health and uptime.',
+        security: [],
         responses: {
           '200': {
             description: 'API is healthy',
@@ -31,6 +198,7 @@ const openApiSpec = {
       post: {
         summary: 'Log in',
         description: 'Authenticate a user and return a JWT.',
+        security: [],
         requestBody: {
           required: true,
           content: {
@@ -51,7 +219,11 @@ const openApiSpec = {
           },
         },
         responses: {
-          '200': { description: 'Logged in' },
+          '200': {
+            description: 'Logged in',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } } },
+          },
+          '401': { description: 'Invalid credentials', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
         },
       },
     },
@@ -60,8 +232,11 @@ const openApiSpec = {
         summary: 'Current user',
         description: 'Get the profile for the currently authenticated user.',
         responses: {
-          '200': { description: 'User profile' },
-          '401': { description: 'Unauthorized' },
+          '200': {
+            description: 'User profile',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/User' } } },
+          },
+          '401': { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
         },
       },
     },
@@ -69,6 +244,7 @@ const openApiSpec = {
       post: {
         summary: 'Register employee',
         description: 'Public endpoint to register a new employee account.',
+        security: [],
         requestBody: {
           required: true,
           content: {
@@ -76,22 +252,41 @@ const openApiSpec = {
               schema: {
                 type: 'object',
                 properties: {
-                  full_name: { type: 'string' },
-                  email: { type: 'string', format: 'email' },
-                  password: { type: 'string', format: 'password' },
+                  full_name: {
+                    type: 'string',
+                    description: 'Full name, e.g. "John Doe"',
+                  },
+                  email: {
+                    type: 'string',
+                    format: 'email',
+                    description: 'Work email, e.g. you@organization.gov',
+                  },
+                  password: {
+                    type: 'string',
+                    format: 'password',
+                    description: 'Password (min 6 characters)',
+                  },
+                  department_id: {
+                    type: 'integer',
+                    description: 'Department ID selected from /api/departments',
+                  },
                 },
-                required: ['full_name', 'email', 'password'],
+                required: ['full_name', 'email', 'password', 'department_id'],
               },
               example: {
                 full_name: 'Jane Doe',
                 email: 'jane@example.com',
                 password: 'password123',
+                department_id: 1,
               },
             },
           },
         },
         responses: {
-          '201': { description: 'Employee registered' },
+          '201': {
+            description: 'Employee registered',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } } },
+          },
         },
       },
     },
@@ -101,8 +296,11 @@ const openApiSpec = {
         summary: 'List users',
         description: 'Admin-only list of all users.',
         responses: {
-          '200': { description: 'Array of users' },
-          '403': { description: 'Forbidden' },
+          '200': {
+            description: 'Array of users',
+            content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/User' } } } },
+          },
+          '403': { description: 'Forbidden', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
         },
       },
       post: {
@@ -141,7 +339,10 @@ const openApiSpec = {
           },
         },
         responses: {
-          '201': { description: 'User created' },
+          '201': {
+            description: 'User created',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/User' } } },
+          },
         },
       },
     },
@@ -149,17 +350,20 @@ const openApiSpec = {
       get: {
         summary: 'Get user by ID',
         description: 'Get a user profile (self or admin).',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: {
-          '200': { description: 'User' },
-          '403': { description: 'Forbidden' },
-          '404': { description: 'Not found' },
+          '200': {
+            description: 'User',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/User' } } },
+          },
+          '403': { description: 'Forbidden', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          '404': { description: 'Not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
         },
       },
       put: {
         summary: 'Update user',
         description: 'Update a user profile (self or admin).',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         requestBody: {
           required: false,
           content: {
@@ -190,13 +394,16 @@ const openApiSpec = {
           },
         },
         responses: {
-          '200': { description: 'Updated user' },
+          '200': {
+            description: 'Updated user',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/User' } } },
+          },
         },
       },
       delete: {
         summary: 'Deactivate user',
         description: 'Admin-only: deactivate a user.',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: {
           '204': { description: 'User deactivated' },
         },
@@ -208,7 +415,10 @@ const openApiSpec = {
         summary: 'List departments',
         description: 'Public list of departments.',
         responses: {
-          '200': { description: 'Array of departments' },
+          '200': {
+            description: 'Array of departments',
+            content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Department' } } } },
+          },
         },
       },
       post: {
@@ -234,14 +444,17 @@ const openApiSpec = {
           },
         },
         responses: {
-          '201': { description: 'Department created' },
+          '201': {
+            description: 'Department created',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Department' } } },
+          },
         },
       },
     },
     '/api/departments/{id}': {
       put: {
         summary: 'Update department',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         requestBody: {
           required: true,
           content: {
@@ -262,12 +475,15 @@ const openApiSpec = {
           },
         },
         responses: {
-          '200': { description: 'Department updated' },
+          '200': {
+            description: 'Department updated',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Department' } } },
+          },
         },
       },
       delete: {
         summary: 'Delete department',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: {
           '204': { description: 'Department deleted' },
         },
@@ -278,7 +494,10 @@ const openApiSpec = {
       get: {
         summary: 'List categories',
         responses: {
-          '200': { description: 'Array of categories' },
+          '200': {
+            description: 'Array of categories',
+            content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Category' } } } },
+          },
         },
       },
       post: {
@@ -306,14 +525,17 @@ const openApiSpec = {
           },
         },
         responses: {
-          '201': { description: 'Category created' },
+          '201': {
+            description: 'Category created',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Category' } } },
+          },
         },
       },
     },
     '/api/categories/{id}': {
       put: {
         summary: 'Update category',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         requestBody: {
           required: true,
           content: {
@@ -336,12 +558,15 @@ const openApiSpec = {
           },
         },
         responses: {
-          '200': { description: 'Category updated' },
+          '200': {
+            description: 'Category updated',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Category' } } },
+          },
         },
       },
       delete: {
         summary: 'Delete category',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: {
           '204': { description: 'Category deleted' },
         },
@@ -387,7 +612,14 @@ const openApiSpec = {
           },
         ],
         responses: {
-          '200': { description: 'Array of tickets' },
+          '200': {
+            description: 'Array of tickets',
+            content: {
+              'application/json': {
+                schema: { type: 'array', items: { $ref: '#/components/schemas/Ticket' } },
+              },
+            },
+          },
         },
       },
       post: {
@@ -425,24 +657,27 @@ const openApiSpec = {
           },
         },
         responses: {
-          '201': { description: 'Ticket created' },
+          '201': {
+            description: 'Ticket created',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Ticket' } } },
+          },
         },
       },
     },
     '/api/tickets/{id}': {
       get: {
         summary: 'Get ticket',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: {
-          '200': { description: 'Ticket' },
-          '404': { description: 'Not found' },
+          '200': { description: 'Ticket', content: { 'application/json': { schema: { $ref: '#/components/schemas/Ticket' } } } },
+          '404': { description: 'Not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
         },
       },
     },
     '/api/tickets/{id}/status': {
       patch: {
         summary: 'Change ticket status',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         requestBody: {
           required: true,
           content: {
@@ -462,14 +697,17 @@ const openApiSpec = {
           },
         },
         responses: {
-          '200': { description: 'Status updated' },
+          '200': {
+            description: 'Status updated',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Ticket' } } },
+          },
         },
       },
     },
     '/api/tickets/{id}/assign': {
       patch: {
         summary: 'Assign ticket',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         requestBody: {
           required: true,
           content: {
@@ -486,30 +724,47 @@ const openApiSpec = {
           },
         },
         responses: {
-          '200': { description: 'Ticket assigned' },
+          '200': {
+            description: 'Ticket assigned',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Ticket' } } },
+          },
         },
       },
     },
     '/api/tickets/{id}/logs': {
       get: {
         summary: 'Ticket logs',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: {
-          '200': { description: 'Array of logs' },
+          '200': {
+            description: 'Array of logs',
+            content: {
+              'application/json': {
+                schema: { type: 'array', items: { $ref: '#/components/schemas/TicketLog' } },
+              },
+            },
+          },
         },
       },
     },
     '/api/tickets/{id}/attachments': {
       get: {
         summary: 'List ticket attachments',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: {
-          '200': { description: 'Array of attachments' },
+          '200': {
+            description: 'Array of attachments',
+            content: {
+              'application/json': {
+                schema: { type: 'array', items: { $ref: '#/components/schemas/TicketAttachment' } },
+              },
+            },
+          },
         },
       },
       post: {
         summary: 'Upload ticket attachment',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         requestBody: {
           required: true,
           content: {
@@ -528,14 +783,17 @@ const openApiSpec = {
           },
         },
         responses: {
-          '201': { description: 'Attachment uploaded' },
+          '201': {
+            description: 'Attachment uploaded',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/TicketAttachment' } } },
+          },
         },
       },
     },
     '/api/tickets/{id}/notes': {
       post: {
         summary: 'Add ticket note',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         requestBody: {
           required: true,
           content: {
@@ -556,14 +814,17 @@ const openApiSpec = {
           },
         },
         responses: {
-          '201': { description: 'Note added' },
+          '201': {
+            description: 'Note added',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/TicketLog' } } },
+          },
         },
       },
     },
     '/api/tickets/{id}/employee-update': {
       patch: {
         summary: 'Employee update own ticket',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         requestBody: {
           required: true,
           content: {
@@ -591,14 +852,17 @@ const openApiSpec = {
           },
         },
         responses: {
-          '200': { description: 'Ticket updated' },
+          '200': {
+            description: 'Ticket updated',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Ticket' } } },
+          },
         },
       },
     },
     '/api/tickets/{id}/feedback': {
       post: {
         summary: 'Submit ticket feedback',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         requestBody: {
           required: true,
           content: {
@@ -619,7 +883,10 @@ const openApiSpec = {
           },
         },
         responses: {
-          '201': { description: 'Feedback stored' },
+          '201': {
+            description: 'Feedback stored',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Ticket' } } },
+          },
         },
       },
     },
@@ -685,7 +952,10 @@ const openApiSpec = {
           },
         ],
         responses: {
-          '200': { description: 'Array of tasks' },
+          '200': {
+            description: 'Array of tasks',
+            content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Task' } } } },
+          },
         },
       },
       post: {
@@ -718,22 +988,25 @@ const openApiSpec = {
           },
         },
         responses: {
-          '201': { description: 'Task created' },
+          '201': {
+            description: 'Task created',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Task' } } },
+          },
         },
       },
     },
     '/api/tasks/{id}': {
       get: {
         summary: 'Get task',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: {
-          '200': { description: 'Task' },
-          '404': { description: 'Not found' },
+          '200': { description: 'Task', content: { 'application/json': { schema: { $ref: '#/components/schemas/Task' } } } },
+          '404': { description: 'Not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
         },
       },
       put: {
         summary: 'Update task',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         requestBody: {
           required: false,
           content: {
@@ -759,12 +1032,15 @@ const openApiSpec = {
           },
         },
         responses: {
-          '200': { description: 'Task updated' },
+          '200': {
+            description: 'Task updated',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Task' } } },
+          },
         },
       },
       delete: {
         summary: 'Delete task',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: {
           '204': { description: 'Task deleted' },
         },
@@ -773,9 +1049,16 @@ const openApiSpec = {
     '/api/tasks/{id}/progress': {
       get: {
         summary: 'Get task progress',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: {
-          '200': { description: 'Task progress' },
+          '200': {
+            description: 'Task progress',
+            content: {
+              'application/json': {
+                schema: { type: 'array', items: { $ref: '#/components/schemas/TaskProgress' } },
+              },
+            },
+          },
         },
       },
     },
@@ -783,8 +1066,8 @@ const openApiSpec = {
       put: {
         summary: 'Update task progress admin comment',
         parameters: [
-          { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
-          { name: 'progressId', in: 'path', required: true, schema: { type: 'string' } },
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
+          { name: 'progressId', in: 'path', required: true, schema: { type: 'integer' } },
         ],
         requestBody: {
           required: true,
@@ -804,7 +1087,10 @@ const openApiSpec = {
           },
         },
         responses: {
-          '200': { description: 'Admin comment updated' },
+          '200': {
+            description: 'Admin comment updated',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/TaskProgress' } } },
+          },
         },
       },
     },
@@ -822,16 +1108,23 @@ const openApiSpec = {
           },
         ],
         responses: {
-          '200': { description: 'Array of notifications' },
+          '200': {
+            description: 'Array of notifications',
+            content: {
+              'application/json': {
+                schema: { type: 'array', items: { $ref: '#/components/schemas/Notification' } },
+              },
+            },
+          },
         },
       },
     },
     '/api/notifications/{id}/read': {
       post: {
         summary: 'Mark notification as read',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: {
-          '200': { description: 'Notification marked as read' },
+          '200': { description: 'Notification marked as read', content: { 'application/json': { schema: { $ref: '#/components/schemas/Ok' } } } },
         },
       },
     },
@@ -839,7 +1132,7 @@ const openApiSpec = {
       post: {
         summary: 'Mark all notifications as read',
         responses: {
-          '200': { description: 'All notifications marked as read' },
+          '200': { description: 'All notifications marked as read', content: { 'application/json': { schema: { $ref: '#/components/schemas/Ok' } } } },
         },
       },
     },

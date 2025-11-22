@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
-if (process.env.NODE_ENV === 'production' && JWT_SECRET === 'dev-secret-key') {
-  console.warn('⚠️  WARNING: Using default JWT secret in production!');
+if (process.env.NODE_ENV === 'production' && JWT_SECRET === 'secret') {
+  console.warn('WARNING: Using default JWT secret in production!');
 }
 
 export function requireAuth(req, res, next) {
@@ -11,8 +11,8 @@ export function requireAuth(req, res, next) {
     const authHeader = req.headers.authorization || '';
 
     if (!authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ 
-        message: 'Authentication required. Please provide a Bearer token.' 
+      return res.status(401).json({
+        message: 'Authentication required. Please provide a Bearer token.'
       });
     }
 
@@ -23,7 +23,7 @@ export function requireAuth(req, res, next) {
     }
 
     const payload = jwt.verify(token, JWT_SECRET);
-    
+
     if (!payload.id || !payload.role) {
       return res.status(401).json({ message: 'Invalid token payload.' });
     }
@@ -40,11 +40,11 @@ export function requireAuth(req, res, next) {
     next();
   } catch (err) {
     console.error('Auth error:', err.message);
-    
+
     if (err.name === 'TokenExpiredError') {
       return res.status(401).json({ message: 'Token has expired.' });
     }
-    
+
     if (err.name === 'JsonWebTokenError') {
       return res.status(401).json({ message: 'Invalid token.' });
     }
@@ -60,8 +60,8 @@ export function requireRole(...allowedRoles) {
     }
 
     if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({ 
-        message: `Access denied. Required roles: ${allowedRoles.join(', ')}.` 
+      return res.status(403).json({
+        message: `Access denied. Required roles: ${allowedRoles.join(', ')}.`
       });
     }
 
@@ -76,7 +76,7 @@ export function optionalAuth(req, res, next) {
     if (authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
       const payload = jwt.verify(token, JWT_SECRET);
-      
+
       req.user = {
         id: payload.id,
         full_name: payload.full_name,
@@ -99,8 +99,8 @@ export function requireActiveUser(req, res, next) {
   }
 
   if (req.user.is_active === false) {
-    return res.status(403).json({ 
-      message: 'Your account has been deactivated. Please contact administrator.' 
+    return res.status(403).json({
+      message: 'Your account has been deactivated. Please contact administrator.'
     });
   }
 
@@ -114,13 +114,13 @@ export function requireOwnershipOrRole(paramKey = 'id', ...allowedRoles) {
     }
 
     const resourceId = req.params[paramKey];
-    
+
     if (req.user.id === parseInt(resourceId) || allowedRoles.includes(req.user.role)) {
       return next();
     }
 
-    return res.status(403).json({ 
-      message: 'You do not have permission to access this resource.' 
+    return res.status(403).json({
+      message: 'You do not have permission to access this resource.'
     });
   };
 }

@@ -2,6 +2,9 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { findUserByEmail, findUserById, createUser } from '../models/userModel.js';
 
+const JWT_SECRET = process.env.JWT_SECRET || 'secret';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1d';
+
 export async function login(req, res, next) {
   try {
     const { email, password } = req.body;
@@ -28,8 +31,8 @@ export async function login(req, res, next) {
       is_active: user.is_active
     };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', {
-      expiresIn: process.env.JWT_EXPIRES_IN || '1d'
+    const token = jwt.sign(payload, JWT_SECRET, {
+      expiresIn: JWT_EXPIRES_IN
     });
 
     res.json({ token, user: payload });
@@ -99,8 +102,8 @@ export async function registerEmployee(req, res, next) {
       is_active: user.is_active
     };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', {
-      expiresIn: process.env.JWT_EXPIRES_IN || '1d'
+    const token = jwt.sign(payload, JWT_SECRET, {
+      expiresIn: JWT_EXPIRES_IN
     });
 
     return res.status(201).json({
